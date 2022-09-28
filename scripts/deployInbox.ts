@@ -11,8 +11,8 @@ const CELO = {
 };
 
 async function main() {
-  await setSwapper("0xA0A8907fc581a087d07350a467C891279ca6E8A2");
-  return;
+  // await setSwapper("0xA0A8907fc581a087d07350a467C891279ca6E8A2");
+  // return;
 
   const factory = await ethers.getContractFactory("Inbox");
   const inbox = await factory.deploy(CELO.tokenBridge);

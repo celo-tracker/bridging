@@ -1,6 +1,6 @@
-# Celo Tracker contracts
+# Brdging contracts
 
-This project contains the contracts used on https://celotracker.com to vote on feature requests, do DeFi stuff and more.
+This project contains contracts used to make bridging between networks simpler. It uses the Wormhole token bridge to send tokens between chains and swaps them wherever liquidity is for Wormhole tokens such as Quickswap.
 
 # This is a Hardhat project
 
