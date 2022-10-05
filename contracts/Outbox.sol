@@ -34,7 +34,8 @@ contract Outbox is Ownable {
         uint32 nonce,
         address destinationBridgedToken,
         address destinationFinalToken,
-        uint256 minFinalAmount
+        uint256 minFinalAmount,
+        address destinationSwapper
     ) external payable returns (uint64 sequence) {
         require(
             inboxes[destinationChain] != address(0),
@@ -62,7 +63,8 @@ contract Outbox is Ownable {
             recipient,
             destinationBridgedToken,
             destinationFinalToken,
-            minFinalAmount
+            minFinalAmount,
+            destinationSwapper
         );
 
         IERC20(tokenToBridge).approve(address(bridge), amountToBridge);

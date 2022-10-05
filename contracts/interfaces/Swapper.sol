@@ -7,11 +7,11 @@ interface Swapper {
         address from,
         address to,
         uint256 requiredAmount
-    ) external payable;
+    ) external;
 
     function getOutputAmount(
         address from,
         address to,
         uint256 amount
-    ) external view returns (uint256);
+    ) external returns (uint256);
 }

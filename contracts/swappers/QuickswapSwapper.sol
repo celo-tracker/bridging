@@ -19,7 +19,7 @@ contract QuickswapSwapper is Swapper, Ownable {
         address from,
         address to,
         uint256 requiredAmount
-    ) external payable {
+    ) external {
         uint256 swapAmount = IERC20(from).balanceOf(address(this));
 
         address[] memory path = new address[](2);
