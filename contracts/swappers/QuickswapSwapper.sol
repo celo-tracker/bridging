@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/Swapper.sol";
 import "../interfaces/uniswapV2/IUniswapV2Router02.sol";
 
-///
+/// Swaps using Quickswap. Used mainly for swapping USDC<->USDCet.
 contract QuickswapSwapper is Swapper, Ownable {
     IUniswapV2Router02 router;
 

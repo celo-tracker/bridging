@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/Swapper.sol";
 import "../interfaces/stableswap/ISwap.sol";
 
-///
+/// Swaps using Mobius on Celo. Can be used for example for swapping cUSD with USDCet.
 contract MobiusSwapper is Swapper, Ownable {
     address public poolAddress;
 

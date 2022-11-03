@@ -8,7 +8,8 @@ import "./interfaces/IWormhole.sol";
 import "./interfaces/TokenBridge.sol";
 import "./interfaces/Swapper.sol";
 
-///
+/// Receives tokens through the Wormhole token bridge, optionally making a swap after bridging.
+/// Read the project README for more details on the whole flow.
 contract Inbox is Ownable {
     event BridgeIn(
         address indexed recipient,
@@ -29,6 +30,7 @@ contract Inbox is Ownable {
         bridge = _bridge;
     }
 
+    /// Receives tokens bridged, optionally swaps them and sends the final tokens to the recipient.
     function bridgeIn(bytes memory encodedVm) external {
         (
             ,
@@ -39,6 +41,7 @@ contract Inbox is Ownable {
             address swapper
         ) = decodeAndVerifyBridgeInfo(encodedVm);
 
+        // If necessary, swap bridged tokens for native ones.
         if (bridgedToken != finalToken) {
             require(swapper != address(0), "IB: No swapper available");
             IERC20(bridgedToken).transfer(
@@ -48,11 +51,13 @@ contract Inbox is Ownable {
             Swapper(swapper).swap(bridgedToken, finalToken, minFinalAmount);
         }
         uint256 finalAmount = IERC20(finalToken).balanceOf(address(this));
+        // Don't trust the swapper, verify.
         require(
             finalAmount >= minFinalAmount,
             "IB: Not enough tokens received"
         );
 
+        // Send the resulting tokens to the recipient.
         require(
             IERC20(finalToken).transfer(recipient, finalAmount),
             "IB: Final transfer failed"
@@ -61,6 +66,11 @@ contract Inbox is Ownable {
         emit BridgeIn(recipient, finalToken, finalAmount, false);
     }
 
+    /// Similar to |bridgeIn| but instead of using the parameters on the payload, use the ones
+    /// passed as parameter. Can only be called by the sender or recipient. Notmeant to be used
+    /// frequently, just here in case there's an issue with the parameters.
+    /// For example, the swapper might not find enough liquidity to perform the swap and satisfy
+    /// |minFinalAmount| so we use a different one or different |minFinalAmount|.
     function bridgeInWithOverrides(
         bytes memory encodedVm,
         Swapper swapper,
@@ -81,6 +91,7 @@ contract Inbox is Ownable {
             "IB: Only sender and recipient can use overrides"
         );
 
+        // Swap the bridged token using the overrides.
         IERC20(bridgedToken).transfer(
             address(swapper),
             IERC20(bridgedToken).balanceOf(address(this))
@@ -88,11 +99,13 @@ contract Inbox is Ownable {
         Swapper(swapper).swap(bridgedToken, finalToken, minFinalAmount);
 
         uint256 finalAmount = IERC20(finalToken).balanceOf(address(this));
+        // Don't trust the swapper, verify.
         require(
             finalAmount >= minFinalAmount,
             "IB: Not enough tokens received"
         );
 
+        // Send the resulting tokens to the recipient.
         require(
             IERC20(finalToken).transfer(recipient, finalAmount),
             "IB: Final transfer failed"
@@ -101,6 +114,14 @@ contract Inbox is Ownable {
         emit BridgeIn(recipient, finalToken, finalAmount, true);
     }
 
+    /// Similar to |bridgeIn| but completely ignores the swapping. This just receives the 
+    /// bridged tokens and sends them to the recipient.
+    /// Not meant to be used frequently, only if there is some issue with the swapper and 
+    /// we don't want to or can't use a different one.
+    /// Note that this can be called by anyone, not just recipient/sender. This isn't 
+    /// dangerous but someone could call this function to annoy users. They would 
+    /// be paying for gas and have no benefit, so we hope this won't happen but if it does
+    /// we can simply deploy a new Inbox with the sender/recipient check here.
     function bridgeInWithoutSwapping(bytes memory encodedVm) external {
         (
             ,
@@ -120,6 +141,8 @@ contract Inbox is Ownable {
         emit BridgeInWithoutSwapping(recipient, bridgedToken, amount);
     }
 
+    /// Make sure |encodedVm| is correct and receive the bridged tokens from the token bridge.
+    /// Also parse the extra fields passed through the payload field.
     function decodeAndVerifyBridgeInfo(bytes memory encodedVm)
         internal
         returns (
@@ -154,7 +177,7 @@ contract Inbox is Ownable {
         swapper = _swapper;
     }
 
-    /// Shouldn't be necessary, here just in case of emergency.
+    /// Shouldn't be necessary, this contract doesn't hold funds. Here just in case of emergency.
     function exec(
         address target,
         uint256 value,
